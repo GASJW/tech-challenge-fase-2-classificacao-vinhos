@@ -6,4 +6,4 @@ __pycache__/
 .venv-tc2/
 .env
 *.log
-
+.idea/
