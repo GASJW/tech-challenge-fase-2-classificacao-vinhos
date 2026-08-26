@@ -1,0 +1,105 @@
+{
+  "experiment": {
+    "target_definition": "quality >= 7",
+    "random_state": 42,
+    "test_size": 0.2,
+    "cv_folds": 5
+  },
+  "dataset": {
+    "rows": 1143,
+    "feature_count": 11,
+    "features": [
+      "fixed acidity",
+      "volatile acidity",
+      "citric acid",
+      "residual sugar",
+      "chlorides",
+      "free sulfur dioxide",
+      "total sulfur dioxide",
+      "density",
+      "pH",
+      "sulphates",
+      "alcohol"
+    ],
+    "quality_distribution": {
+      "3": 6,
+      "4": 33,
+      "5": 483,
+      "6": 462,
+      "7": 143,
+      "8": 16
+    },
+    "positive_count": 159,
+    "positive_rate": 0.13910761154855644,
+    "missing_values": 0,
+    "duplicate_ids": 0,
+    "excluded_columns": [
+      "Id",
+      "quality"
+    ]
+  },
+  "split": {
+    "train_rows": 914,
+    "test_rows": 229,
+    "train_positive_rate": 0.1389496717724289,
+    "test_positive_rate": 0.13973799126637554
+  },
+  "models": {
+    "logistic_regression": {
+      "test": {
+        "accuracy": 0.7991266375545851,
+        "precision": 0.3793103448275862,
+        "recall": 0.6875,
+        "f1": 0.4888888888888889,
+        "roc_auc": 0.8504124365482234,
+        "average_precision": 0.5400881601981772
+      },
+      "cross_validation": {
+        "mean": {
+          "accuracy": 0.7845193058307813,
+          "precision": 0.37188578290528174,
+          "recall": 0.7975384615384614,
+          "f1": 0.5054094786052398,
+          "roc_auc": 0.8694370964841014,
+          "average_precision": 0.5098034366274626
+        },
+        "std": {
+          "accuracy": 0.026106592166279145,
+          "precision": 0.04270996117969864,
+          "recall": 0.13032721677359904,
+          "f1": 0.05953428951466286,
+          "roc_auc": 0.0369914865561957,
+          "average_precision": 0.13194097344903388
+        }
+      }
+    },
+    "random_forest": {
+      "test": {
+        "accuracy": 0.9126637554585153,
+        "precision": 0.7307692307692307,
+        "recall": 0.59375,
+        "f1": 0.6551724137931034,
+        "roc_auc": 0.9094225888324873,
+        "average_precision": 0.7093709625504833
+      },
+      "cross_validation": {
+        "mean": {
+          "accuracy": 0.9059448747973338,
+          "precision": 0.7092865497076023,
+          "recall": 0.56,
+          "f1": 0.6232588727452656,
+          "roc_auc": 0.9190350473520674,
+          "average_precision": 0.6943169083283618
+        },
+        "std": {
+          "accuracy": 0.01728944336176893,
+          "precision": 0.09090582161750341,
+          "recall": 0.07008363558157754,
+          "f1": 0.06746954747510873,
+          "roc_auc": 0.024219046925505985,
+          "average_precision": 0.08320795182800146
+        }
+      }
+    }
+  }
+}

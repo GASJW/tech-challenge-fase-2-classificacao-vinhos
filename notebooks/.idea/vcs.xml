@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../../../../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../../../01_Projetos/Cofre" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../../../01_Projetos/Pessoal_Controle_Estoque_VRs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../../../01_Projetos/Pessoal_GitHub_Profile" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../Pos_Tech_DTAT" vcs="Git" />
+  </component>
+</project>
