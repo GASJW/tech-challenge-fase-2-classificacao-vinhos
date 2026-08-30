@@ -10,12 +10,13 @@ Pacote consolidado para os três entregáveis oficiais do Tech Challenge FIAP Fa
 
 ## Ordem recomendada
 
-1. [`notebooks/00-validacoes-iniciais.ipynb`](notebooks/00-validacoes-iniciais.ipynb) — saneamento, contrato do CSV, deduplicação por perfil, nulos, outliers e criação das classificações possíveis.
-2. [`notebooks/01-eda-modelagem.ipynb`](notebooks/01-eda-modelagem.ipynb) — EDA, preparação da base limpa, treinamento dos modelos e avaliação.
-3. [`results/metrics.json`](results/metrics.json) — métricas oficiais dos modelos.
-4. [`presentation/Tech-Challenge-2-Storytelling.pptx`](presentation/Tech-Challenge-2-Storytelling.pptx) — apresentação oficial.
-5. [`presentation/tech-challenge-2-executiva.html`](presentation/tech-challenge-2-executiva.html) — versão navegável de apoio.
-6. [`docs/roteiro-video-executivo-5min.md`](docs/roteiro-video-executivo-5min.md) — roteiro do vídeo obrigatório.
+1. [`docs/guia-repositorio-tech2.md`](docs/guia-repositorio-tech2.md) — visão geral da estrutura e do fluxo do projeto.
+2. [`notebooks/00-validacoes-iniciais.ipynb`](notebooks/00-validacoes-iniciais.ipynb) — saneamento, contrato do CSV, deduplicação por perfil, nulos, outliers e criação das classificações possíveis.
+3. [`notebooks/01-eda-modelagem.ipynb`](notebooks/01-eda-modelagem.ipynb) — EDA, preparação da base limpa, treinamento dos modelos e avaliação.
+4. [`results/metrics.json`](results/metrics.json) — métricas oficiais dos modelos.
+5. [`presentation/Tech-Challenge-2-Storytelling.pptx`](presentation/Tech-Challenge-2-Storytelling.pptx) — apresentação oficial.
+6. [`presentation/tech-challenge-2-executiva.html`](presentation/tech-challenge-2-executiva.html) — versão navegável de apoio.
+7. [`docs/roteiro-video-executivo-5min.md`](docs/roteiro-video-executivo-5min.md) — roteiro do vídeo obrigatório.
 
 ## Conteúdo
 
