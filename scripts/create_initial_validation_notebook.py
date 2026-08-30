@@ -54,12 +54,27 @@ cells = [
             )
 
         sys.path.insert(0, str(project_root / "src"))
-        from wine_quality.data import FEATURE_COLUMNS, REQUIRED_COLUMNS, prepare_dataset
+        from wine_quality.data import (
+            FEATURE_COLUMNS,
+            REQUIRED_COLUMNS,
+            deduplicate_profiles,
+            prepare_dataset,
+            profile_duplicate_summary,
+        )
 
         data_path = project_root / "data" / "raw" / "WineQT.csv"
         frame = pd.read_csv(data_path)
         print(f"Arquivo: {data_path}")
         print(f"Dimensão bruta: {frame.shape[0]:,} linhas x {frame.shape[1]} colunas".replace(",", "."))
+        duplicate_summary = profile_duplicate_summary(frame)
+        clean_frame = deduplicate_profiles(frame)
+        processed_path = project_root / "data" / "processed" / "WineQT_deduplicated.csv"
+        processed_path.parent.mkdir(parents=True, exist_ok=True)
+        clean_frame.to_csv(processed_path, index=False)
+        print(
+            f"Dimensão limpa: {len(clean_frame):,} perfis únicos; "
+            f"{duplicate_summary['removed_duplicate_rows']} linhas redundantes removidas".replace(",", ".")
+        )
         """
     ),
     markdown("## 1. Contrato estrutural do arquivo"),
@@ -140,6 +155,12 @@ cells = [
                     "resultado": duplicate_ids == 0,
                     "decisão": "Id fica para rastreabilidade, não para predição",
                 },
+                {
+                    "validação": "Perfis físico-químicos repetidos",
+                    "quantidade": duplicate_summary["duplicate_profile_rows"],
+                    "resultado": duplicate_summary["duplicate_profile_groups"] >= 0,
+                    "decisão": "uma ocorrência por perfil e quality na base de modelagem",
+                },
             ]
         )
         display(integrity_report)
@@ -206,7 +227,7 @@ cells = [
     ),
     code(
         """
-        features, target = prepare_dataset(frame, threshold=7)
+        features, target = prepare_dataset(clean_frame, threshold=7)
         binary_distribution = pd.DataFrame(
             {
                 "classe": ["Baixa/média (< 7)", "Alta (>= 7)"],
@@ -228,12 +249,12 @@ cells = [
         """
         outlier_rows = []
         for column in FEATURE_COLUMNS:
-            q1 = frame[column].quantile(0.25)
-            q3 = frame[column].quantile(0.75)
+            q1 = clean_frame[column].quantile(0.25)
+            q3 = clean_frame[column].quantile(0.75)
             iqr = q3 - q1
             lower = q1 - 1.5 * iqr
             upper = q3 + 1.5 * iqr
-            count = int(((frame[column] < lower) | (frame[column] > upper)).sum())
+            count = int(((clean_frame[column] < lower) | (clean_frame[column] > upper)).sum())
             outlier_rows.append(
                 {
                     "variável": column,
@@ -267,8 +288,12 @@ cells = [
                     "tratamento": "nenhuma linha alterada; não há nulos",
                 },
                 {
-                    "item": "Duplicidades",
-                    "tratamento": "nenhuma linha removida; Id é único",
+                    "item": "Linhas duplicadas",
+                    "tratamento": "nenhuma linha idêntica; Id é único",
+                },
+                {
+                    "item": "Perfis repetidos",
+                    "tratamento": "125 linhas redundantes removidas; primeira ocorrência preservada",
                 },
                 {
                     "item": "Id",
@@ -299,11 +324,11 @@ cells = [
         """
         ### Conclusão
 
-        A base está consistente para seguir à EDA: não há nulos, duplicidades ou
-        `Id` repetido; todas as colunas são numéricas; e o alvo binário preserva as
-        duas classes. Nenhum registro foi excluído. O principal cuidado para a
-        modelagem é o desbalanceamento: apenas 13,91% das amostras são de alta
-        qualidade.
+        A base bruta não tem nulos, linhas idênticas ou `Id` repetido. A auditoria
+        também encontrou perfis físico-químicos repetidos: 114 grupos e 125 linhas
+        redundantes. Para a modelagem, usamos 1.018 perfis únicos, preservando a
+        primeira ocorrência e o CSV bruto para rastreabilidade. O principal cuidado
+        restante é o desbalanceamento: 13,46% dos perfis limpos são de alta qualidade.
         """
     ),
 ]

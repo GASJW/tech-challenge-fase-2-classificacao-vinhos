@@ -38,10 +38,28 @@ cells = [
         import seaborn as sns
         from IPython.display import display
 
-        project_root = Path.cwd()
+        project_root = next(
+            (
+                candidate
+                for candidate in [Path.cwd(), *Path.cwd().parents]
+                if (candidate / "data" / "raw" / "WineQT.csv").exists()
+            ),
+            None,
+        )
+        if project_root is None:
+            raise FileNotFoundError(
+                "Execute o notebook a partir do projeto Tech-Challenge-Fase-2-"
+                "Classificacao-de-Vinhos ou de uma pasta filha."
+            )
         sys.path.insert(0, str(project_root / "src"))
 
-        from wine_quality.data import load_dataset, prepare_dataset, split_dataset
+        from wine_quality.data import (
+            deduplicate_profiles,
+            load_dataset,
+            prepare_dataset,
+            profile_duplicate_summary,
+            split_dataset,
+        )
         from wine_quality.modeling import build_models, evaluate_model, feature_importance, fit_models
 
         data_path = project_root / "data" / "raw" / "WineQT.csv"
@@ -52,12 +70,24 @@ cells = [
     markdown("## 1. Compreensão dos dados"),
     code(
         """
-        frame = load_dataset(data_path)
-        print(f"Linhas: {len(frame):,}".replace(",", "."))
+        raw_frame = load_dataset(data_path)
+        duplicate_summary = profile_duplicate_summary(raw_frame)
+        frame = deduplicate_profiles(raw_frame)
+        print(f"Linhas brutas: {len(raw_frame):,}".replace(",", "."))
+        print(f"Perfis únicos usados na modelagem: {len(frame):,}".replace(",", "."))
         print(f"Colunas: {frame.shape[1]}")
         print(f"Valores ausentes: {int(frame.isna().sum().sum())}")
         print(f"Ids duplicados: {int(frame['Id'].duplicated().sum())}")
+        print(
+            f"Perfis repetidos: {duplicate_summary['duplicate_profile_groups']} grupos; "
+            f"{duplicate_summary['removed_duplicate_rows']} linhas removidas"
+        )
         display(frame.head())
+        """
+    ),
+    markdown(
+        """
+        A modelagem usa uma ocorrência por combinação de medições físico-químicas e `quality`. O CSV bruto permanece preservado; a base limpa tem 1.018 perfis únicos.
         """
     ),
     code(

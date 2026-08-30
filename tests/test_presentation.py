@@ -16,7 +16,8 @@ def test_presentation_contains_executive_storyline() -> None:
         if hasattr(shape, "text") and shape.text.strip()
     ).replace("\n", " ").replace("\v", " ")
 
-    assert len(presentation.slides) == 8
-    assert "QUALIDADE DE VINHOS" in all_text
-    assert "Random Forest entrega o melhor equilíbrio" in all_text
-    assert "Recomendação: triagem com revisão humana" in all_text
+    assert len(presentation.slides) == 9
+    assert "Quando a química" in all_text
+    assert "Random Forest" in all_text
+    assert "deduplicação" in all_text
+    assert "1.018" in all_text

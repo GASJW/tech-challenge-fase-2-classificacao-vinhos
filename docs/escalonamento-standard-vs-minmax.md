@@ -7,20 +7,21 @@ são modelos de Machine Learning e não calculam acurácia, recall ou qualquer
 outra métrica. Seu papel é transformar as variáveis de entrada antes do
 treinamento, colocando-as em escalas comparáveis.
 
-No Tech Challenge 2, o `StandardScaler` foi mantido na Regressão Logística
-porque apresentou melhor desempenho geral que o `MinMaxScaler` no mesmo
-experimento. O Random Forest não utiliza escalonamento, pois modelos baseados
-em árvores trabalham com pontos de corte e não dependem da escala numérica das
-variáveis.
+No Tech Challenge 2, o `StandardScaler` foi mantido como pipeline oficial da
+Regressão Logística. Depois da deduplicação, o `MinMaxScaler` ficou ligeiramente
+melhor no split de teste, mas o `StandardScaler` teve Average Precision média
+ligeiramente maior na validação cruzada. O Random Forest não utiliza
+escalonamento, pois modelos baseados em árvores trabalham com pontos de corte e
+não dependem da escala numérica das variáveis.
 
 ## Contexto da nossa base
 
-- 1.143 amostras.
+- 1.143 registros brutos e 1.018 perfis únicos usados na modelagem.
 - 11 variáveis físico-químicas usadas como preditores.
 - `Id` excluído dos preditores por ser apenas identificador.
 - `quality` excluída dos preditores para evitar *target leakage*.
 - Alvo binário: `quality >= 7` representa alta qualidade.
-- 159 amostras positivas, equivalentes a 13,91% da base.
+- 137 perfis positivos, equivalentes a 13,46% da base limpa.
 - Divisão treino/teste estratificada, com 20% para teste e `random_state=42`.
 
 As variáveis possuem escalas diferentes. Por exemplo, `density` fica próxima de
@@ -66,7 +67,7 @@ afetado por valores extremos. Como os outliers da nossa base foram sinalizados,
 mas não removidos automaticamente, esses valores podem ampliar o intervalo e
 comprimir as observações mais comuns em uma faixa estreita.
 
-## Comparação experimental
+## Comparação experimental na base limpa
 
 Mantivemos constantes:
 
@@ -80,33 +81,35 @@ Mantivemos constantes:
 
 Alteramos somente o escalonador.
 
-| Métrica | StandardScaler | MinMaxScaler |
+| Métrica no teste | StandardScaler | MinMaxScaler |
 |---|---:|---:|
-| Accuracy | **79,9%** | 78,6% |
-| Precision | **37,9%** | 36,1% |
-| Recall | **68,8%** | **68,8%** |
-| F1-score | **48,9%** | 47,3% |
-| ROC-AUC | **0,850** | 0,832 |
-| Average Precision | **0,540** | 0,503 |
+| Accuracy | 78,4% | **79,9%** |
+| Precision | 35,6% | **37,9%** |
+| Recall | 77,8% | **81,5%** |
+| F1-score | 48,8% | **51,8%** |
+| ROC-AUC | 0,882 | **0,890** |
+| Average Precision | 0,441 | **0,462** |
 
 ### Leitura dos resultados
 
-- O recall ficou igual nos dois casos.
-- O `StandardScaler` teve melhor accuracy, precision, F1, ROC-AUC e Average
-  Precision.
-- A diferença mais relevante para a classe minoritária apareceu em F1 e
-  Average Precision, métricas mais informativas que accuracy isolada neste
-  problema.
-- A comparação foi feita no mesmo conjunto de teste e serve como evidência
-  prática para a escolha do pipeline atual. Uma avaliação adicional com
-  validação cruzada específica para o MinMaxScaler pode aprofundar a análise,
-  mas não é necessária para o escopo atual do desafio.
+- No split de teste, o `MinMaxScaler` foi ligeiramente melhor nas métricas
+  apresentadas.
+- Na validação cruzada estratificada de cinco partes, o `StandardScaler` teve
+  Average Precision média de 0,546, contra 0,540 do `MinMaxScaler`; recall médio
+  foi 0,827 nos dois.
+- As diferenças são pequenas. Por isso, a escolha do scaler deve considerar o
+  protocolo de validação e a estabilidade, não apenas um único split.
+- A comparação foi feita depois da deduplicação e está registrada em
+  `results/tables/scaler_comparison.csv`.
 
-## Por que escolhemos o StandardScaler
+## Por que o pipeline oficial mantém o StandardScaler
 
-A decisão não é que o `StandardScaler` seja sempre superior. A decisão é que,
-para esta base e esta configuração da Regressão Logística, ele foi a alternativa
-mais consistente entre as métricas avaliadas.
+A decisão não é que o `StandardScaler` seja sempre superior. Na base limpa, o
+`MinMaxScaler` venceu o split de teste, enquanto o `StandardScaler` teve Average
+Precision média ligeiramente maior na validação cruzada. Como o objetivo é
+manter uma comparação reprodutível e priorizar a ordenação da classe positiva,
+o StandardScaler permanece no pipeline oficial e o resultado do MinMax fica
+documentado como alternativa experimental.
 
 A escolha também é coerente com a presença de valores extremos: o MinMaxScaler
 usa diretamente os extremos para definir os limites da transformação. O
@@ -203,16 +206,18 @@ eles são erros ou observações reais.
 ## Decisão final do projeto
 
 ```text
-Regressão Logística → imputação mediana + StandardScaler
-Random Forest       → imputação mediana, sem escalonamento
+Base de modelagem    → deduplicação por `FEATURE_COLUMNS + quality`, 1.018 perfis
+Regressão Logística  → imputação mediana + StandardScaler
+Random Forest        → imputação mediana, sem escalonamento
 ```
 
 Frase recomendada para a apresentação:
 
-> Testamos o StandardScaler e o MinMaxScaler antes da Regressão Logística. O
-> StandardScaler apresentou melhor desempenho geral na nossa base, principalmente
-> em F1, ROC-AUC e Average Precision. O recall foi igual nos dois casos, então a
-> escolha não ocorreu por causa do recall, mas pelo equilíbrio geral das métricas.
+> Testamos o StandardScaler e o MinMaxScaler depois da deduplicação. No split de
+> teste, o MinMaxScaler foi ligeiramente superior; na validação cruzada, o
+> StandardScaler teve Average Precision média um pouco maior. Como a diferença é
+> pequena, mantivemos o StandardScaler no pipeline oficial por estabilidade e
+> registramos o MinMaxScaler como alternativa.
 
 ## Referências internas
 

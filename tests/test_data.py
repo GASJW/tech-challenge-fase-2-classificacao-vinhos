@@ -3,7 +3,12 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from wine_quality.data import prepare_dataset, split_dataset, validate_dataset
+from wine_quality.data import (
+    deduplicate_profiles,
+    prepare_dataset,
+    split_dataset,
+    validate_dataset,
+)
 
 
 REQUIRED_COLUMNS = [
@@ -64,6 +69,19 @@ def test_validate_dataset_rejects_missing_values_and_duplicate_ids() -> None:
 
     with pytest.raises(ValueError, match="Id duplicado"):
         validate_dataset(frame)
+
+
+def test_deduplicate_profiles_keeps_one_row_per_physical_profile() -> None:
+    frame = sample_frame()
+    duplicate = frame.iloc[[0]].copy()
+    duplicate.loc[:, "Id"] = 99
+    duplicated = pd.concat([frame, duplicate], ignore_index=True)
+
+    clean = deduplicate_profiles(duplicated)
+
+    assert len(clean) == len(frame)
+    assert clean["Id"].tolist() == [10, 11, 12, 13]
+    assert clean.duplicated(subset=REQUIRED_COLUMNS[:-1]).sum() == 0
 
 
 def test_split_dataset_preserves_both_classes() -> None:

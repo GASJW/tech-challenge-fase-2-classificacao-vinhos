@@ -22,10 +22,18 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold, cross_validate
 
-from .data import FEATURE_COLUMNS, load_dataset, prepare_dataset, split_dataset
+from .data import (
+    FEATURE_COLUMNS,
+    deduplicate_profiles,
+    load_dataset,
+    prepare_dataset,
+    profile_duplicate_summary,
+    split_dataset,
+)
 from .modeling import (
     METRIC_NAMES,
     build_models,
+    build_logistic_model,
     evaluate_model,
     feature_importance,
     fit_models,
@@ -221,6 +229,7 @@ def run_experiment(
     output_dir: str | Path,
     threshold: int = 7,
     random_state: int = 42,
+    clean_data_path: str | Path | None = None,
 ) -> dict:
     """Executa a pipeline completa e persiste os artefatos do experimento."""
     output_path = Path(output_dir)
@@ -229,7 +238,13 @@ def run_experiment(
     table_path.mkdir(parents=True, exist_ok=True)
     figure_path.mkdir(parents=True, exist_ok=True)
 
-    frame = load_dataset(data_path)
+    raw_frame = load_dataset(data_path)
+    duplicate_summary = profile_duplicate_summary(raw_frame)
+    frame = deduplicate_profiles(raw_frame)
+    if clean_data_path is not None:
+        clean_path = Path(clean_data_path)
+        clean_path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_csv(clean_path, index=False)
     features, target = prepare_dataset(frame, threshold=threshold)
     X_train, X_test, y_train, y_test = split_dataset(
         features, target, test_size=0.2, random_state=random_state
@@ -247,6 +262,40 @@ def run_experiment(
         for name, model in fitted_models.items()
     }
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
+    minmax_model = fit_models(
+        {"logistic_regression_minmax": build_logistic_model(
+            random_state=random_state, scaler="minmax"
+        )},
+        X_train,
+        y_train,
+    )["logistic_regression_minmax"]
+    scaling_metrics = {
+        "standard_scaler": test_metrics["logistic_regression"],
+        "minmax_scaler": evaluate_model(minmax_model, X_test, y_test),
+    }
+    scaling_cv_metrics: dict[str, dict[str, dict[str, float]]] = {}
+    for scaler_name in ("standard", "minmax"):
+        scaler_model = build_logistic_model(
+            random_state=random_state, scaler=scaler_name
+        )
+        scores = cross_validate(
+            scaler_model,
+            X_train,
+            y_train,
+            cv=cv,
+            scoring=CV_SCORING,
+            n_jobs=1,
+        )
+        scaling_cv_metrics[f"{scaler_name}_scaler"] = {
+            "mean": {
+                metric: float(np.mean(scores[f"test_{metric}"]))
+                for metric in METRIC_NAMES
+            },
+            "std": {
+                metric: float(np.std(scores[f"test_{metric}"]))
+                for metric in METRIC_NAMES
+            },
+        }
     cv_metrics: dict[str, dict[str, dict[str, float]]] = {}
     for name, model in models.items():
         scores = cross_validate(
@@ -291,6 +340,25 @@ def run_experiment(
         model_rows.append(row)
     model_comparison = pd.DataFrame(model_rows)
     model_comparison.to_csv(table_path / "model_comparison.csv", index=False)
+    scaling_rows = []
+    for name, metrics in scaling_metrics.items():
+        row = {"scaler": name, **metrics}
+        row.update(
+            {
+                f"cv_mean_{metric}": value
+                for metric, value in scaling_cv_metrics[name]["mean"].items()
+            }
+        )
+        row.update(
+            {
+                f"cv_std_{metric}": value
+                for metric, value in scaling_cv_metrics[name]["std"].items()
+            }
+        )
+        scaling_rows.append(row)
+    pd.DataFrame(scaling_rows).to_csv(
+        table_path / "scaler_comparison.csv", index=False
+    )
 
     importance_frames = []
     for name, model in fitted_models.items():
@@ -309,6 +377,7 @@ def run_experiment(
         prediction_frame.to_csv(table_path / f"predictions_{name}.csv", index=False)
 
     dataset_summary = {
+        "raw_rows": int(len(raw_frame)),
         "rows": int(len(frame)),
         "feature_count": int(len(FEATURE_COLUMNS)),
         "features": FEATURE_COLUMNS,
@@ -318,7 +387,8 @@ def run_experiment(
         "positive_count": int(target.sum()),
         "positive_rate": float(target.mean()),
         "missing_values": int(frame.isna().sum().sum()),
-        "duplicate_ids": int(frame["Id"].duplicated().sum()),
+        "duplicate_ids": int(raw_frame["Id"].duplicated().sum()),
+        **duplicate_summary,
         "excluded_columns": ["Id", "quality"],
     }
     result = {
@@ -338,6 +408,10 @@ def run_experiment(
         "models": {
             name: {"test": test_metrics[name], "cross_validation": cv_metrics[name]}
             for name in fitted_models
+        },
+        "scaling_comparison": {
+            "test": scaling_metrics,
+            "cross_validation": scaling_cv_metrics,
         },
     }
     _write_json(output_path / "metrics.json", result)

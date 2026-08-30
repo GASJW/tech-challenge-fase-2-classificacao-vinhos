@@ -1,7 +1,12 @@
 import numpy as np
 import pandas as pd
 
-from wine_quality.modeling import build_models, evaluate_model, fit_models
+from wine_quality.modeling import (
+    build_logistic_model,
+    build_models,
+    evaluate_model,
+    fit_models,
+)
 
 
 def test_build_models_exposes_two_required_classifiers() -> None:
@@ -9,6 +14,12 @@ def test_build_models_exposes_two_required_classifiers() -> None:
 
     assert set(models) == {"logistic_regression", "random_forest"}
     assert all(hasattr(model, "fit") for model in models.values())
+
+
+def test_build_logistic_model_supports_minmax_scaler() -> None:
+    model = build_logistic_model(random_state=42, scaler="minmax")
+
+    assert model.named_steps["scaler"].__class__.__name__ == "MinMaxScaler"
 
 
 def test_fit_and_evaluate_model_returns_required_metrics() -> None:

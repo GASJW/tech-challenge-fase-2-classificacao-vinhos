@@ -26,6 +26,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=PROJECT_ROOT / "results",
     )
+    parser.add_argument(
+        "--clean-data-path",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "processed" / "WineQT_deduplicated.csv",
+    )
     parser.add_argument("--threshold", type=int, default=7)
     parser.add_argument("--random-state", type=int, default=42)
     return parser.parse_args()
@@ -38,6 +43,7 @@ def main() -> None:
         output_dir=args.output_dir,
         threshold=args.threshold,
         random_state=args.random_state,
+        clean_data_path=args.clean_data_path,
     )
     summary = {
         "rows": result["dataset"]["rows"],

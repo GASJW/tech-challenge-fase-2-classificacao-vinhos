@@ -16,7 +16,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 METRIC_NAMES = [
@@ -29,22 +29,37 @@ METRIC_NAMES = [
 ]
 
 
-def build_models(random_state: int = 42) -> dict[str, Pipeline]:
-    """Cria as duas abordagens exigidas pelo enunciado."""
-    return {
-        "logistic_regression": Pipeline(
-            steps=[
-                ("imputer", SimpleImputer(strategy="median")),
-                ("scaler", StandardScaler()),
-                (
-                    "model",
-                    LogisticRegression(
-                        class_weight="balanced",
-                        max_iter=2000,
-                        random_state=random_state,
-                    ),
+def build_logistic_model(
+    random_state: int = 42, scaler: str = "standard"
+) -> Pipeline:
+    """Cria a Regressão Logística com o escalonador solicitado."""
+    scalers = {
+        "standard": StandardScaler(),
+        "minmax": MinMaxScaler(),
+    }
+    if scaler not in scalers:
+        raise ValueError("scaler deve ser 'standard' ou 'minmax'.")
+    return Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", scalers[scaler]),
+            (
+                "model",
+                LogisticRegression(
+                    class_weight="balanced",
+                    max_iter=2000,
+                    random_state=random_state,
                 ),
-            ]
+            ),
+        ]
+    )
+
+
+def build_models(random_state: int = 42) -> dict[str, Pipeline]:
+    """Cria as duas abordagens oficiais exigidas pelo enunciado."""
+    return {
+        "logistic_regression": build_logistic_model(
+            random_state=random_state, scaler="standard"
         ),
         "random_forest": Pipeline(
             steps=[

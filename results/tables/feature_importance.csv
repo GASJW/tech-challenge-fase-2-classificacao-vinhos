@@ -1,23 +1,23 @@
 model,feature,importance,direction,signed_value
-logistic_regression,alcohol,0.9911603063594301,positive,0.9911603063594301
-logistic_regression,sulphates,0.6824324164015618,positive,0.6824324164015618
-logistic_regression,total sulfur dioxide,0.5199303035428662,negative,-0.5199303035428662
-logistic_regression,citric acid,0.4859248190257305,positive,0.4859248190257305
-logistic_regression,volatile acidity,0.46728175917259235,negative,-0.46728175917259235
-logistic_regression,chlorides,0.42072904787920845,negative,-0.42072904787920845
-logistic_regression,residual sugar,0.3291071671964435,positive,0.3291071671964435
-logistic_regression,density,0.3013825114783573,negative,-0.3013825114783573
-logistic_regression,free sulfur dioxide,0.2420671527640813,positive,0.2420671527640813
-logistic_regression,fixed acidity,0.17737060595511006,positive,0.17737060595511006
-logistic_regression,pH,0.1773413797937218,negative,-0.1773413797937218
-random_forest,alcohol,0.21456893858783757,positive,0.21456893858783757
-random_forest,sulphates,0.14563345289427726,positive,0.14563345289427726
-random_forest,citric acid,0.14496767392040932,positive,0.14496767392040932
-random_forest,volatile acidity,0.11345664902264203,positive,0.11345664902264203
-random_forest,density,0.07263919896373719,positive,0.07263919896373719
-random_forest,total sulfur dioxide,0.06290530193517822,positive,0.06290530193517822
-random_forest,fixed acidity,0.06119849091012807,positive,0.06119849091012807
-random_forest,pH,0.05250729206885443,positive,0.05250729206885443
-random_forest,chlorides,0.051658962419964635,positive,0.051658962419964635
-random_forest,residual sugar,0.0427566914021536,positive,0.0427566914021536
-random_forest,free sulfur dioxide,0.03770734787481757,positive,0.03770734787481757
+logistic_regression,alcohol,0.8607499853429224,positive,0.8607499853429224
+logistic_regression,sulphates,0.7145436955330777,positive,0.7145436955330777
+logistic_regression,density,0.712780181643392,negative,-0.712780181643392
+logistic_regression,fixed acidity,0.6095143354992614,positive,0.6095143354992614
+logistic_regression,volatile acidity,0.5789197204022017,negative,-0.5789197204022017
+logistic_regression,total sulfur dioxide,0.5654376692065703,negative,-0.5654376692065703
+logistic_regression,residual sugar,0.46188203495858743,positive,0.46188203495858743
+logistic_regression,chlorides,0.4349010201050844,negative,-0.4349010201050844
+logistic_regression,free sulfur dioxide,0.19726223872907064,positive,0.19726223872907064
+logistic_regression,citric acid,0.12005941131537962,positive,0.12005941131537962
+logistic_regression,pH,0.07262578025488219,negative,-0.07262578025488219
+random_forest,alcohol,0.2167015091826575,positive,0.2167015091826575
+random_forest,volatile acidity,0.13470497289738748,positive,0.13470497289738748
+random_forest,sulphates,0.13148784739968616,positive,0.13148784739968616
+random_forest,citric acid,0.09855570479048854,positive,0.09855570479048854
+random_forest,density,0.08586020690204733,positive,0.08586020690204733
+random_forest,chlorides,0.0741992645829415,positive,0.0741992645829415
+random_forest,total sulfur dioxide,0.06624926248740588,positive,0.06624926248740588
+random_forest,fixed acidity,0.05769223841683528,positive,0.05769223841683528
+random_forest,residual sugar,0.04851301554032636,positive,0.04851301554032636
+random_forest,pH,0.04656364862186079,positive,0.04656364862186079
+random_forest,free sulfur dioxide,0.0394723291783632,positive,0.0394723291783632

@@ -10,8 +10,8 @@ Pacote consolidado para os três entregáveis oficiais do Tech Challenge FIAP Fa
 
 ## Ordem recomendada
 
-1. [`notebooks/00-validacoes-iniciais.ipynb`](notebooks/00-validacoes-iniciais.ipynb) — saneamento, contrato do CSV, duplicidades, nulos, outliers e criação das classificações possíveis.
-2. [`notebooks/01-eda-modelagem.ipynb`](notebooks/01-eda-modelagem.ipynb) — EDA, preparação, treinamento dos modelos e avaliação.
+1. [`notebooks/00-validacoes-iniciais.ipynb`](notebooks/00-validacoes-iniciais.ipynb) — saneamento, contrato do CSV, deduplicação por perfil, nulos, outliers e criação das classificações possíveis.
+2. [`notebooks/01-eda-modelagem.ipynb`](notebooks/01-eda-modelagem.ipynb) — EDA, preparação da base limpa, treinamento dos modelos e avaliação.
 3. [`results/metrics.json`](results/metrics.json) — métricas oficiais dos modelos.
 4. [`presentation/Tech-Challenge-2-Storytelling.pptx`](presentation/Tech-Challenge-2-Storytelling.pptx) — apresentação oficial.
 5. [`presentation/tech-challenge-2-executiva.html`](presentation/tech-challenge-2-executiva.html) — versão navegável de apoio.
@@ -21,7 +21,7 @@ Pacote consolidado para os três entregáveis oficiais do Tech Challenge FIAP Fa
 
 | Pasta | Conteúdo |
 |---|---|
-| `data/` | Dataset `WineQT.csv` usado no projeto |
+| `data/` | Dataset bruto e snapshot deduplicado usado na modelagem |
 | `notebooks/` | Validações iniciais e notebook completo de EDA/modelagem |
 | `src/` | Código Python reutilizável da preparação e dos modelos |
 | `scripts/` | Scripts de execução da pipeline e geração dos artefatos |
@@ -33,12 +33,13 @@ Pacote consolidado para os três entregáveis oficiais do Tech Challenge FIAP Fa
 ## Principais decisões
 
 - Alvo binário: `quality >= 7` representa alta qualidade; `quality < 7` representa baixa/média qualidade.
+- Deduplicação: a fonte bruta tem 1.143 registros; perfis com as mesmas 11 medições e a mesma `quality` são reduzidos a uma ocorrência, preservando o primeiro `Id`. A base de modelagem tem 1.018 perfis únicos e 125 linhas redundantes removidas.
 - `Id` e `quality` não entram como preditores, evitando vazamento de informação.
 - Outliers são sinalizados por IQR, mas não removidos automaticamente.
-- A Regressão Logística usa imputação mediana e `StandardScaler` dentro do pipeline.
+- A Regressão Logística usa imputação mediana e `StandardScaler` dentro do pipeline; o `MinMaxScaler` é mantido como comparação experimental.
 - O Random Forest usa imputação mediana, sem necessidade de escalonamento.
 - A avaliação considera accuracy, precision, recall, F1, ROC-AUC e Average Precision.
-- A comparação oficial utiliza Regressão Logística e Random Forest; os dois modelos já atendem ao requisito mínimo de “pelo menos dois modelos”.
+- Os modelos oficiais foram treinados na base limpa: Regressão Logística e Random Forest. Os dois modelos atendem ao requisito mínimo de “pelo menos dois modelos”.
 - KNN e Árvore de Decisão permanecem como referência do trabalho dos colegas, mas não entram como resultado oficial sem reexecução no mesmo protocolo.
 
 Detalhes: [`docs/decisoes-metodologicas.md`](docs/decisoes-metodologicas.md) e [`docs/escalonamento-standard-vs-minmax.md`](docs/escalonamento-standard-vs-minmax.md).

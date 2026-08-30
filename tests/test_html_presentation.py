@@ -20,9 +20,13 @@ def test_html_presentation_contains_eight_fiap_slides_and_official_results() -> 
     assert "VINHOS" in html
     assert "Random Forest entrega o melhor equilíbrio" in html
     assert "Recomendação: triagem com revisão humana" in html
-    assert "0,709" in html
-    assert "0,909" in html
-    assert "13,9%" in html
+    assert "0,692" in html
+    assert "0,925" in html
+    assert "13,5%" in html
+    assert "1.018" in html
+    assert "125" in html
+    assert "perfis únicos modelados" in html
+    assert "Base limpa" in html
     assert html.count("data:image/png;base64,") >= 3
     assert "addEventListener('keydown'" in html
     assert "prefers-reduced-motion" in html

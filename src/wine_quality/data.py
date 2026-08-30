@@ -20,6 +20,7 @@ FEATURE_COLUMNS = [
     "alcohol",
 ]
 REQUIRED_COLUMNS = [*FEATURE_COLUMNS, "quality", "Id"]
+PROFILE_COLUMNS = [*FEATURE_COLUMNS, "quality"]
 
 
 def validate_dataset(frame: pd.DataFrame) -> None:
@@ -49,6 +50,30 @@ def load_dataset(path: str | Path) -> pd.DataFrame:
     frame = pd.read_csv(csv_path)
     validate_dataset(frame)
     return frame
+
+
+def profile_duplicate_summary(frame: pd.DataFrame) -> dict[str, int]:
+    """Resume repetições do mesmo perfil físico-químico e qualidade."""
+    validate_dataset(frame)
+    duplicate_mask = frame.duplicated(subset=PROFILE_COLUMNS, keep=False)
+    duplicate_profiles = frame.loc[duplicate_mask, PROFILE_COLUMNS].drop_duplicates()
+    return {
+        "duplicate_profile_groups": int(len(duplicate_profiles)),
+        "duplicate_profile_rows": int(duplicate_mask.sum()),
+        "removed_duplicate_rows": int(
+            frame.duplicated(subset=PROFILE_COLUMNS, keep="first").sum()
+        ),
+    }
+
+
+def deduplicate_profiles(frame: pd.DataFrame) -> pd.DataFrame:
+    """Mantém uma ocorrência por perfil e preserva o primeiro Id para auditoria."""
+    validate_dataset(frame)
+    clean_frame = frame.drop_duplicates(
+        subset=PROFILE_COLUMNS, keep="first"
+    ).reset_index(drop=True)
+    validate_dataset(clean_frame)
+    return clean_frame
 
 
 def prepare_dataset(

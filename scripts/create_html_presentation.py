@@ -35,9 +35,15 @@ def build_replacements(metrics: dict) -> dict[str, str]:
 
     replacement = {
         "__ROWS__": f"{dataset['rows']:,}".replace(",", "."),
+        "__RAW_ROWS__": f"{dataset['raw_rows']:,}".replace(",", "."),
         "__FEATURES__": str(dataset["feature_count"]),
         "__POSITIVE__": str(dataset["positive_count"]),
         "__POS_RATE__": fmt_pct(dataset["positive_rate"]),
+        "__NEGATIVE__": str(dataset["rows"] - dataset["positive_count"]),
+        "__NEG_RATE__": fmt_pct(1 - dataset["positive_rate"]),
+        "__DUP_GROUPS__": str(dataset["duplicate_profile_groups"]),
+        "__DUP_ROWS__": str(dataset["duplicate_profile_rows"]),
+        "__REMOVED_DUPLICATES__": str(dataset["removed_duplicate_rows"]),
         "__FOREST_PRECISION__": fmt_pct(forest["precision"]),
         "__FOREST_RECALL__": fmt_pct(forest["recall"]),
         "__FOREST_F1__": fmt_pct(forest["f1"]),
@@ -279,14 +285,14 @@ HTML_TEMPLATE = r'''<!doctype html>
         <div class="rule"></div>
         <div class="section-head"><div class="section-label">Contexto</div><h2>A decisão começa pelo rótulo</h2><p class="lead">A pergunta é objetiva: podemos priorizar amostras com maior probabilidade de alta qualidade antes da avaliação sensorial?</p></div>
         <div class="kpis">
-          <div class="kpi"><div class="value">__ROWS__</div><span class="label">amostras analisadas</span></div>
+          <div class="kpi"><div class="value">__ROWS__</div><span class="label">perfis únicos modelados</span></div>
           <div class="kpi"><div class="value">__POS_RATE__</div><span class="label">alta qualidade (`quality &gt;= 7`)</span></div>
           <div class="kpi"><div class="value">__FEATURES__</div><span class="label">variáveis físico-químicas</span></div>
-          <div class="kpi"><div class="value">0</div><span class="label">valores ausentes na base</span></div>
+          <div class="kpi"><div class="value">__REMOVED_DUPLICATES__</div><span class="label">linhas redundantes removidas</span></div>
         </div>
         <div class="two-col">
           <div class="card accent"><h3>Contrato analítico</h3><ul class="arrow-list"><li><strong>Id</strong> preservado para rastreabilidade, excluído do treinamento.</li><li><strong>quality</strong> usada para criar o alvo, fora das features.</li><li>Split treino/teste estratificado para respeitar a classe minoritária.</li></ul></div>
-          <div class="card"><h3>Saneamento sem apagar sinal</h3><p>Não removemos observações. Outliers foram sinalizados por IQR para investigação de domínio; a decisão de excluir um valor precisa distinguir erro de medição de condição real de produção.</p><div class="callout"><strong>Resultado:</strong> a base chega consistente à EDA e à modelagem.</div></div>
+          <div class="card"><h3>Saneamento rastreável</h3><p>A base bruta tem __RAW_ROWS__ linhas e __DUP_GROUPS__ grupos de perfis repetidos (__DUP_ROWS__ linhas). Mantivemos a primeira ocorrência de cada perfil e removemos __REMOVED_DUPLICATES__ linhas redundantes. Outliers foram apenas sinalizados por IQR.</p><div class="callout"><strong>Resultado:</strong> os modelos usam __ROWS__ perfis únicos; o bruto permanece para auditoria.</div></div>
         </div>
       </div>
       <div class="footer"><span>Fonte: WineQT.csv · auditoria inicial</span><span>02 / 08</span></div>
@@ -300,7 +306,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         <div class="two-col wide-left">
           <figure class="chart compact"><img src="__IMG_TARGET__" alt="Distribuição das classes baixa/média e alta qualidade"><figcaption>Distribuição do alvo binário: alta qualidade é a classe positiva.</figcaption></figure>
           <div>
-            <div class="stat-pair"><div class="stat"><div class="big-number muted-number">86,1%</div><div class="caption">baixa/média qualidade<br>984 amostras</div></div><div class="stat"><div class="big-number">13,9%</div><div class="caption">alta qualidade<br>__POSITIVE__ amostras</div></div></div>
+            <div class="stat-pair"><div class="stat"><div class="big-number muted-number">__NEG_RATE__</div><div class="caption">baixa/média qualidade<br>__NEGATIVE__ amostras</div></div><div class="stat"><div class="big-number">__POS_RATE__</div><div class="caption">alta qualidade<br>__POSITIVE__ amostras</div></div></div>
             <div class="card accent"><h3>Implicação de negócio</h3><p>Accuracy isolada pode parecer alta mesmo ignorando a classe de interesse. Por isso, a avaliação prioriza precision, recall, F1, ROC-AUC e Average Precision.</p></div>
           </div>
         </div>
@@ -318,10 +324,10 @@ HTML_TEMPLATE = r'''<!doctype html>
           <figure class="chart compact"><img src="__IMG_CORRELATION__" alt="Heatmap de correlação entre propriedades físico-químicas e quality"><figcaption>Correlação de Pearson com `quality`; associação não implica causalidade.</figcaption></figure>
           <div>
             <div class="corr-list">
-              <div class="corr-row"><div><span class="name">alcohol</span><div class="bar"><i style="width: 100%;"></i></div></div><div class="score">+0,485</div></div>
-              <div class="corr-row"><div><span class="name">volatile acidity</span><div class="bar"><i class="negative" style="width: 84%;"></i></div></div><div class="score">−0,407</div></div>
+              <div class="corr-row"><div><span class="name">alcohol</span><div class="bar"><i style="width: 100%;"></i></div></div><div class="score">+0,486</div></div>
+              <div class="corr-row"><div><span class="name">volatile acidity</span><div class="bar"><i class="negative" style="width: 84%;"></i></div></div><div class="score">−0,409</div></div>
               <div class="corr-row"><div><span class="name">sulphates</span><div class="bar"><i style="width: 53%;"></i></div></div><div class="score">+0,258</div></div>
-              <div class="corr-row"><div><span class="name">citric acid</span><div class="bar"><i style="width: 50%;"></i></div></div><div class="score">+0,241</div></div>
+              <div class="corr-row"><div><span class="name">citric acid</span><div class="bar"><i style="width: 50%;"></i></div></div><div class="score">+0,242</div></div>
             </div>
             <div class="card accent" style="margin-top: 1.4rem;"><h3>Leitura executiva</h3><p>Mais álcool aparece associado a notas maiores. Mais acidez volátil aparece associada a notas menores. Sulfatos e ácido cítrico formam o segundo bloco de sinais positivos.</p></div>
           </div>
@@ -334,7 +340,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       <div class="slide-inner">
         <div class="topline"><div class="brand">FIAP <span>/ POSTECH</span></div><div class="slide-no">TECH CHALLENGE 2 · 05</div></div>
         <div class="rule"></div>
-        <div class="section-head"><div class="section-label">Modelagem</div><h2>Random Forest entrega o melhor equilíbrio</h2><p class="lead">O modelo não linear supera o baseline na precisão e na capacidade de ordenar as amostras promissoras.</p></div>
+        <div class="section-head"><div class="section-label">Modelagem</div><h2>Random Forest entrega o melhor equilíbrio</h2><p class="lead">Os dois classificadores foram treinados nos perfis únicos; o modelo não linear supera o baseline na precisão e na capacidade de ordenar as amostras promissoras.</p></div>
         <div class="two-col wide-right">
           <div>
             <table class="model-table" aria-label="Comparação de métricas dos modelos"><thead><tr><th>Modelo</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>Avg Precision</th></tr></thead><tbody><tr><td>Regressão Logística</td><td>__LOG_PRECISION__</td><td>__LOG_RECALL__</td><td>__LOG_F1__</td><td>__LOG_ROC__</td><td>__LOG_AP__</td></tr><tr><td>Random Forest</td><td>__FOREST_PRECISION__</td><td>__FOREST_RECALL__</td><td>__FOREST_F1__</td><td>__FOREST_ROC__</td><td>__FOREST_AP__</td></tr></tbody></table>
@@ -344,7 +350,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         </div>
         <div class="card" style="margin-top: 1.25rem;"><p><strong>Trade-off:</strong> a Regressão Logística alcança recall de __LOG_RECALL__ — útil quando perder um positivo é mais caro — mas gera mais falsos positivos e apresenta Average Precision de __LOG_AP__.</p></div>
       </div>
-      <div class="footer"><span>Split estratificado · random_state 42 · 5-fold CV</span><span>05 / 08</span></div>
+      <div class="footer"><span>Base limpa · split estratificado · random_state 42 · 5-fold CV</span><span>05 / 08</span></div>
     </section>
 
     <section class="slide" id="slide-6" aria-label="Custo do erro">
