@@ -1,3 +1,18 @@
+## English summary
+
+**FIAP Data Analytics Tech Challenge — Wine Quality Classification**
+
+This academic project explores how physicochemical measurements can support the classification of wine quality. It combines data quality checks, exploratory analysis, binary classification and an executive presentation of the findings.
+
+- **Data preparation:** validate the CSV structure, examine missing values and outliers, and remove duplicate profiles. The modeling dataset contains 1,018 unique profiles after removing 125 redundant rows.
+- **Modeling:** compare Logistic Regression and Random Forest on a binary target (quality score of 7 or above versus below 7). Preprocessing is included in the modeling pipelines; the ID and original quality score are excluded from the predictors to avoid data leakage.
+- **Evaluation:** report accuracy, precision, recall, F1, ROC-AUC and average precision. See [model metrics](results/metrics.json) and [methodological decisions](docs/decisoes-metodologicas.md).
+- **Deliverables:** reproducible Python code and notebooks, automated tests, documented results, and an executive presentation. The model is intended to support screening, not replace sensory validation.
+
+To run the project, follow the **Execução** section below. The detailed documentation and executive materials are currently in Portuguese.
+
+---
+
 # Entrega final — Tech Challenge FIAP Fase 2
 
 Pacote consolidado para os três entregáveis oficiais do Tech Challenge FIAP Fase 2: repositório técnico, apresentação executiva e vídeo executivo.
